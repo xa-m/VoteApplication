@@ -6,8 +6,11 @@
 
 <head>
     <title>@Model.Vote.VoteTitle | Oylama</title>
+    <link rel="stylesheet" href="~/lib/alertify/css/alertify.min.css">
+
     <script src="~/lib/signalr/signalr.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/alertify/alertify.min.js"></script>
 
     <link rel="stylesheet" href="~/lib/bootstrap/bootstrap.min.css">
     <link rel="icon" href="~/logo.png">
@@ -35,7 +38,6 @@
 
                 $("#unvoted").removeClass("d-block");
                 $("#unvoted").addClass("d-none");
-
                 $("#voted").removeClass("d-none");
                 $("#voted").addClass("d-block");
                 // $(".unvoted").css("display", "none");
@@ -64,6 +66,7 @@
             connection.on("voteResponse", response => {
                 localStorage.setItem(slug, response);
                 openVotedSection(response);
+                alertify.success("Başarıyla oy kullandınız."); 
             });
 
             connection.on("voted", (voted, toWho, isTimeLeft) => {
