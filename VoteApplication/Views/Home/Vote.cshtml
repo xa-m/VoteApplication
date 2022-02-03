@@ -1,0 +1,140 @@
+﻿@model VoteViewModel
+@{
+    ViewData["Title"] = "Privacy Policy";
+}
+
+
+<head>
+    <title>@Model.Vote.VoteTitle | Oylama</title>
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/bootstrap.min.css">
+    <link rel="icon" href="~/logo.png">
+
+    @*
+        <link rel="stylesheet" href="/Shared/bootstrap.min.css">*@
+    <script>
+        $("document").ready(() => {
+            console.log("creator's github: https://github.com/xa-m");
+            // create a signalr connection
+            var connection = new signalR.HubConnectionBuilder().withUrl("/votehub").build();
+            connection.start().catch(err => console.error(err.toString()));
+            const slug = $("#slug").text();
+
+            function openVotedSection(toWho) {
+                if (toWho == 1) {
+                    $(".yourChoice1").show();
+                }
+                else if (toWho == 2) {
+                    $(".yourChoice2").show();
+                }
+                else if (toWho == 0) {
+                    $(".timeLeft").text("Bu oylama için zaman sona erdi.");
+                }
+
+                $("#unvoted").removeClass("d-block");
+                $("#unvoted").addClass("d-none");
+
+                $("#voted").removeClass("d-none");
+                $("#voted").addClass("d-block");
+                // $(".unvoted").css("display", "none");
+                // $(".voted").css("display", "block");
+            }
+
+            function openUnVotedSection() {
+                $("#unvoted").removeClass("d-none");
+                $("#unvoted").addClass("d-block");
+            }
+
+            $("#vote1").click(() => {
+                connection.invoke("VoteToSelect", slug, 1);
+            });
+
+            $("#vote2").click(() => {
+                connection.invoke("VoteToSelect", slug, 2);
+            });
+
+
+            connection.on("clientConnected", () => {
+                var oldVote = localStorage.getItem(slug);
+                connection.invoke("ReportSlug", slug, oldVote);
+            });
+
+            connection.on("voteResponse", response => {
+                localStorage.setItem(slug, response);
+                openVotedSection(response);
+            });
+
+            connection.on("voted", (voted, toWho, isTimeLeft) => {
+                if (isTimeLeft) {
+                    if (voted) {
+                        openVotedSection(toWho);
+                    }
+                    else {
+                        openUnVotedSection();
+                    }
+                }
+                else {
+                    openVotedSection(toWho);
+                }
+            });
+
+            connection.on("updateValue", (allVotes, select1, select2) => {
+                $(".totalVote").text(allVotes);
+                $("#vote1Count").text(select1);
+                $("#vote2Count").text(select2);
+            });
+
+        });
+    </script>
+
+</head>
+
+
+<a class="btn btn-outline-dark" asp-controller="Home" asp-action="Index">ana sayfaya dön</a>
+@if (Model.isFound)
+{
+    <div class="unvoted d-flex justify-content-center">
+        <div class="d-none" id="unvoted">
+            <h5 class="timeLeft">@Model.DaysLeft gün @Model.HoursLeft saat @Model.MinutesLeft dakika kaldı</h5>
+            <h1>OY VERİLMEDİ</h1><br><br><br>
+
+            <span id="slug" style="display: none;">@Model.Vote.Slug</span>
+            <h1>@Model.Vote.VoteTitle</h1>
+            <h3>Toplam Oy: <span class="totalVote">@Model.Vote.TotalVote</span></h3>
+            <br />
+
+            <!-- <h2>@Model.Vote.VoteSelect1</h2> -->
+            <!-- @*<h2>@Model.Vote.VoteSelect2</h2> *@ -->
+
+        <button type="button" class="btn btn-success" id="vote1">@Model.Vote.VoteSelect1</button>
+            <button type="button" class="btn btn-danger" id="vote2">@Model.Vote.VoteSelect2</button>
+        </div>
+    </div>
+    <h1 id="durum"></h1>
+
+    <div class="voted d-flex justify-content-center">
+        <div class="d-none" id="voted">
+            <h5 class="timeLeft">@Model.DaysLeft gün @Model.HoursLeft saat @Model.MinutesLeft dakika kaldı</h5>
+            <h1>@Model.Vote.VoteTitle</h1>
+            <h3>Toplam Oy: <span class="totalVote">@Model.Vote.TotalVote</span></h3>
+            <br />
+            <h2>@Model.Vote.VoteSelect1</h2>
+            <span class="yourChoice1 text-muted" style="display: none;">(senin seçimin)</span>
+
+            <h4 id="vote1Count">@Model.Vote.VoteSelect1Count</h4>
+            <br><br>
+            <h2>@Model.Vote.VoteSelect2</h2>
+            <span class="yourChoice2 text-muted" style="display: none;">(senin seçimin)</span>
+            <h4 id="vote2Count">@Model.Vote.VoteSelect2Count</h4>
+        </div>
+    </div>
+}
+else
+{
+    <div class="unvoted">
+        <h6>Some kind of 404</h6>
+        <h1>This Vote is not exist...</h1>
+    </div>
+}
