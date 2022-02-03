@@ -32,7 +32,7 @@ namespace VoteApplication.UI.Hubs
                     vote.TotalVote++;
 
                     await _ctx.SaveChangesAsync();
-                    await ValuesUpdated(vote.Slug);
+                    await ValuesUpdated(vote.Id);
                     await Clients.Caller.SendAsync("voteResponse", VoteSelect);
                 }
                 else if (VoteSelect == 2)
@@ -41,7 +41,7 @@ namespace VoteApplication.UI.Hubs
                     vote.TotalVote++;
 
                     await _ctx.SaveChangesAsync();
-                    await ValuesUpdated(vote.Slug);
+                    await ValuesUpdated(vote.Id);
                     await Clients.Caller.SendAsync("voteResponse", VoteSelect);
                 }
                 else { return; }
@@ -73,9 +73,9 @@ namespace VoteApplication.UI.Hubs
             ClientList.Add(client);
         }
 
-        public async Task ValuesUpdated(string slug)
+        public async Task ValuesUpdated(int voteId)
         {
-            VoteModel vote = _ctx.Votes.FirstOrDefault(v => v.Slug == slug);
+            VoteModel vote = _ctx.Votes.FirstOrDefault(v => v.Id == voteId);
             IEnumerable<string> clients = ClientList.FindAll(c => c.LookingVoteId == vote.Id).Select(c => c.ConnectionId);
 
             int allVotes = vote.TotalVote;
