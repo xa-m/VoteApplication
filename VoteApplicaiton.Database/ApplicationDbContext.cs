@@ -11,9 +11,11 @@ namespace VoteApplicaiton.Database
 {
     public class ApplicationDbContext : IdentityDbContext
     {
-        public ApplicationDbContext(DbContextOptions options) : base(options)
-        {
+        //public ApplicationDbContext(DbContextOptions options) : base(options) { }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Filename=Database.db");
         }
 
         // database model sets

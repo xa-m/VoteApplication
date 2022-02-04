@@ -18,6 +18,10 @@ namespace VoteApplication
     {
         public Startup(IConfiguration configuration)
         {
+            using (var client = new ApplicationDbContext())
+            {
+                client.Database.EnsureCreated();
+            }
             Configuration = configuration;
         }
 
@@ -37,7 +41,8 @@ namespace VoteApplication
             ));
 
             services.AddControllersWithViews();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Debug")));
+            //services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Debug")));
+            services.AddEntityFrameworkSqlite().AddDbContext<ApplicationDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
